@@ -4,6 +4,7 @@ import {
   CircleCheck, CircleX, ClipboardCheck, Download, FileCheck2, FlaskConical,
   ScanSearch, Save, ShieldCheck, Sparkles,
 } from "lucide-react";
+import "./testBenchFix.css";
 
 const steps = [
   ["Choisir", FlaskConical],
@@ -99,7 +100,7 @@ export function TestBench({ back }) {
         {step === 0 && <ScenarioChoice selected={form.scenario} choose={chooseScenario} />}
         {step === 1 && <Review scenario={scenario} flags={form.flags} toggleFlag={toggleFlag} coverage={coverage} />}
         {step === 2 && <Decision form={form} update={(field, value) => setForm((current) => ({ ...current, [field]: value }))} scenario={scenario} issuesFound={issuesFound} coverage={coverage} extraFlags={extraFlags} />}
-        {step === 3 && <Trace form={form} scenario={scenario} issuesFound={issuesFound} decisionRight={decisionRight} coverage={coverage} extraFlags={extraFlags} />}
+        {step === 3 && <Trace form={form} update={(field, value) => setForm((current) => ({ ...current, [field]: value }))} scenario={scenario} issuesFound={issuesFound} decisionRight={decisionRight} coverage={coverage} extraFlags={extraFlags} />}
         <div className="tb-actions">
           <button className="tb-secondary" disabled={step === 0} onClick={() => setStep((current) => current - 1)}><ArrowLeft size={17} /> Précédent</button>
           {step < 3 ? <button className="tb-primary" onClick={() => setStep((current) => current + 1)}>Continuer <ArrowRight size={17} /></button> : <button className="tb-primary" onClick={() => { setExported(true); window.print(); }}><Download size={17} /> Exporter ma fiche de test</button>}
@@ -153,18 +154,21 @@ function Decision({ form, update, scenario, issuesFound, coverage, extraFlags })
       ["AJUSTER", CircleAlert, "Un écart est identifié mais une correction et un nouveau test peuvent le résoudre."],
       ["STOP", CircleX, "Un risque ou un prérequis non maîtrisé impose de suspendre ou d’exclure le cas."],
     ].map(([decision, Icon, text]) => <button className={`${decision.toLowerCase()} ${form.decision === decision ? "selected" : ""}`} onClick={() => update("decision", decision)} key={decision}><Icon size={20} /><div><b>{decision}</b><p>{text}</p></div></button>)}</div>
-    <label className="tb-field"><span>Correction, garde-fou ou règle d’arrêt</span><textarea value={form.corrections} onChange={(event) => update("corrections", event.target.value)} placeholder="Ex. remplacer les formulations problématiques, faire valider les informations manquantes, puis tester une nouvelle version." /></label>
-    <label className="tb-field"><span>Personne qui garde la décision humaine</span><input value={form.reviewer} onChange={(event) => update("reviewer", event.target.value)} placeholder="Ex. responsable recrutement ou manager habilité." /></label>
   </div>;
 }
 
-function Trace({ form, scenario, issuesFound, decisionRight, coverage, extraFlags }) {
+function Trace({ form, update, scenario, issuesFound, decisionRight, coverage, extraFlags }) {
   const indicator = !form.decision ? ["pending", "Décision à compléter", "La fiche reste ouverte tant qu’une décision n’est pas formulée."] : decisionRight ? ["good", "Décision cohérente avec le scénario", "Votre décision est proportionnée au niveau de risque observé."] : ["adjust", "Décision à réinterroger", `Dans ce scénario pédagogique, la décision attendue est « ${scenario.decision} ». Relisez les écarts et la règle de prudence.`];
   return <div className="tb-trace">
     <div className={`tb-ready ${indicator[0]}`}><BadgeCheck size={22} /><div><b>{indicator[1]}</b><p>{indicator[2]}</p></div></div>
     <dl className="tb-summary"><div><dt>Cas testé</dt><dd>{scenario.title}</dd></div><div><dt>Écarts relevés</dt><dd>{coverage} écart{coverage > 1 ? "s" : ""} clé{coverage > 1 ? "s" : ""}{extraFlags ? ` · ${extraFlags} à reconsidérer` : ""}</dd></div><div><dt>Décision</dt><dd><span className={`tb-decision-badge ${form.decision ? form.decision.toLowerCase() : "pending"}`}>{form.decision || "À décider"}</span></dd></div><div><dt>Relecteur / décideur</dt><dd>{form.reviewer || "À préciser"}</dd></div><div><dt>Correction ou garde-fou</dt><dd>{form.corrections || "À préciser"}</dd></div></dl>
     {!issuesFound && <div className="tb-soft-note"><Sparkles size={17} /><p>Le débrief pédagogique apparaît dans le quiz J2. Ici, l’enjeu est de rendre votre raisonnement visible : extrait, risque, correction, décision, puis nouveau test si nécessaire.</p></div>}
-    <label className="tb-field"><span>Justification courte pour la fiche J2</span><textarea value={form.rationale} onChange={(event) => update("rationale", event.target.value)} placeholder="Ex. AJUSTER : le brouillon est utile mais doit être corrigé avant diffusion. Les informations manquantes seront validées par les RH." /></label>
+    <section className="tb-trace-fields">
+      <div><h3>Compléter la trace du test</h3><p>Ces éléments apparaîtront dans votre fiche exportée.</p></div>
+      <label className="tb-field"><span>Correction, garde-fou ou règle d’arrêt</span><textarea value={form.corrections} onChange={(event) => update("corrections", event.target.value)} placeholder="Ex. remplacer les formulations problématiques, faire valider les informations manquantes, puis tester une nouvelle version." /></label>
+      <label className="tb-field"><span>Personne qui garde la décision humaine</span><input value={form.reviewer} onChange={(event) => update("reviewer", event.target.value)} placeholder="Ex. responsable recrutement ou manager habilité." /></label>
+      <label className="tb-field"><span>Justification courte pour la fiche J2</span><textarea value={form.rationale} onChange={(event) => update("rationale", event.target.value)} placeholder="Ex. AJUSTER : le brouillon est utile mais doit être corrigé avant diffusion. Les informations manquantes seront validées par les RH." /></label>
+    </section>
   </div>;
 }
 
