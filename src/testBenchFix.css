@@ -1,0 +1,22 @@
+/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
+.tb-trace-fields {
+  display: grid;
+  gap: 16px;
+  padding: 19px;
+  border: 1px solid #cfe7e8;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f4fcfc, #f8fbff);
+}
+
+.tb-trace-fields h3 {
+  margin: 0;
+  color: #24666d;
+  font-size: 16px;
+}
+
+.tb-trace-fields > div > p {
+  margin: 4px 0 0;
+  color: #68828d;
+  font-size: 12px;
+  line-height: 1.5;
+}
