@@ -7,6 +7,9 @@ import {
 import "./J2CertificationStudio.css";
 
 const STORAGE_KEY = "ia-rh-j2-certification-studio";
+const J1_PROJECT_KEY = "ia-rh-j1-project";
+const PROMPT_CLINIC_KEY = "ia-rh-prompt-clinic";
+const TEST_BENCH_KEY = "ia-rh-test-bench";
 const TESTS = [
   ["normal", "Normal"],
   ["limit", "Limite"],
@@ -41,15 +44,70 @@ const defaultForm = {
 function loadForm() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return {
+    const form = {
       ...defaultForm, ...saved,
       solutionA: { ...emptySolution, ...saved.solutionA },
       solutionB: { ...emptySolution, ...saved.solutionB },
       tests: Object.fromEntries(TESTS.map(([key]) => [key, { ...emptyTest, ...saved.tests?.[key] }])),
     };
+    return saved._j2Imported ? form : { ...importPreviousWork(form), _j2Imported: true };
   } catch {
-    return defaultForm;
+    return { ...importPreviousWork(defaultForm), _j2Imported: true };
   }
+}
+
+function readStored(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+  catch { return {}; }
+}
+
+function useIfEmpty(current, incoming) {
+  return String(current || "").trim() ? current : incoming;
+}
+
+function importPreviousWork(form) {
+  const j1 = readStored(J1_PROJECT_KEY);
+  const c1 = j1.c1 || {};
+  const retained = j1.arbitration?.retained === "0" || j1.arbitration?.retained === "1" ? Number(j1.arbitration.retained) : null;
+  const process = retained !== null ? j1.processes?.[retained] || {} : {};
+  const prompt = readStored(PROMPT_CLINIC_KEY).form || {};
+  const bench = readStored(TEST_BENCH_KEY).form || {};
+  const normal = form.tests?.normal || emptyTest;
+  const testSummary = bench.flags?.length ? `Signalements relevés dans le Banc d’essai : ${bench.flags.join(", ")}.` : "";
+  const testAdjustment = [bench.corrections, bench.rationale].filter(Boolean).join(" ");
+
+  return {
+    ...form,
+    context: useIfEmpty(form.context, [j1.context?.organisation, j1.context?.role].filter(Boolean).join(" · ") || (prompt.useCase ? "Projet préparé dans Prompt Clinic" : "")),
+    process: useIfEmpty(form.process, process.title || prompt.contentType || ""),
+    problem: useIfEmpty(form.problem, j1.context?.irritant || prompt.useCase || ""),
+    objective: useIfEmpty(form.objective, c1.indicator || prompt.objective || ""),
+    baseline: useIfEmpty(form.baseline, [c1.baseline, c1.baselineMethod].filter(Boolean).join(" · ")),
+    perimeter: useIfEmpty(form.perimeter, c1.included || [prompt.audience && `Public : ${prompt.audience}.`, prompt.source && `Sources déclarées : ${prompt.source}.`].filter(Boolean).join(" ")),
+    outOfScope: useIfEmpty(form.outOfScope, c1.excluded || prompt.constraints || ""),
+    humanDecision: useIfEmpty(form.humanDecision, c1.humanValidation || (prompt.contentType ? "Relecture, validation et conduite de l’échange par les RH et le manager habilité." : "")),
+    promptV1: useIfEmpty(form.promptV1, prompt.productionPrompt || ""),
+    controlPrompt: useIfEmpty(form.controlPrompt, prompt.controlPrompt || ""),
+    versionChanges: useIfEmpty(form.versionChanges, prompt.finalNotes || ""),
+    authorizedData: useIfEmpty(form.authorizedData, c1.allowedData || ""),
+    forbiddenData: useIfEmpty(form.forbiddenData, c1.excluded || ""),
+    dataToConfirm: useIfEmpty(form.dataToConfirm, c1.questionsToVerify || ""),
+    testData: useIfEmpty(form.testData, prompt.finalNotes ? `Cas de test prévu : ${prompt.finalNotes}` : ""),
+    identifiedLimit: useIfEmpty(form.identifiedLimit, [c1.ethicalRisk1, c1.relationalRisk].filter(Boolean).join(" · ")),
+    humanOwner: useIfEmpty(form.humanOwner, c1.responsible || bench.reviewer || ""),
+    nextAction: useIfEmpty(form.nextAction, c1.j2Question || bench.corrections || ""),
+    decision: useIfEmpty(form.decision, bench.decision || ""),
+    justification: useIfEmpty(form.justification, bench.rationale || ""),
+    tests: {
+      ...form.tests,
+      normal: {
+        ...normal,
+        expected: useIfEmpty(normal.expected, bench.scenario ? "Repérer les écarts du brouillon avant toute diffusion." : ""),
+        observed: useIfEmpty(normal.observed, testSummary),
+        adjustment: useIfEmpty(normal.adjustment, testAdjustment),
+      },
+    },
+  };
 }
 
 export function J2CertificationStudio({ back }) {
@@ -66,6 +124,7 @@ export function J2CertificationStudio({ back }) {
   const updateTest = (key, field, value) => setForm((current) => ({
     ...current, tests: { ...current.tests, [key]: { ...current.tests[key], [field]: value } },
   }));
+  const importWork = () => setForm((current) => ({ ...importPreviousWork(current), _j2Imported: true }));
   const issues = useMemo(() => inspectForm(form), [form]);
   const filled = useMemo(() => countFilled(form), [form]);
   const exportDocument = (mode) => {
@@ -100,7 +159,7 @@ export function J2CertificationStudio({ back }) {
 
       <section className="cs2-workspace">
         <div className="cs2-step-heading"><span>ÉTAPE {step + 1} / 6</span><div><h2>{STEPS[step][0]}</h2><p>{STEPS[step][2]}</p></div></div>
-        {step === 0 && <Project form={form} update={update} />}
+        {step === 0 && <Project form={form} update={update} importWork={importWork} />}
         {step === 1 && <Solutions form={form} update={update} updateSolution={updateSolution} />}
         {step === 2 && <Prototype form={form} update={update} />}
         {step === 3 && <DataAndTests form={form} update={update} updateTest={updateTest} />}
@@ -135,8 +194,9 @@ function Field({ label, hint, value, onChange, placeholder, area = false, type =
   return <label className="cs2-field"><span>{label}{hint && <small>{hint}</small>}</span><Input type={type} value={value || ""} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
 }
 
-function Project({ form, update }) {
+function Project({ form, update, importWork }) {
   return <div className="cs2-stack">
+    <div className="cs2-note"><Sparkles size={20} /><div><b>Reprise des travaux J1 et J2</b><p>Le Studio reprend uniquement les champs encore vides depuis Studio C1, Prompt Clinic et Banc d’essai. Chaque valeur reste modifiable.</p></div><button type="button" className="cs2-import-button" onClick={importWork}>Actualiser</button></div>
     <div className="cs2-safety"><ShieldCheck size={21} /><div><b>Projet réel, informations maîtrisées.</b><p>Décrivez le processus sans coller de donnée personnelle, sensible ou confidentielle non autorisée. Une baseline absente reste « à collecter » : elle n’est jamais inventée.</p></div></div>
     <div className="cs2-grid two">
       <Field label="Organisation ou contexte" value={form.context} onChange={(v) => update("context", v)} placeholder="Ex. service RH d’une organisation de 300 salariés" />
