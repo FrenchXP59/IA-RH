@@ -50,6 +50,19 @@ const scenarios = {
       ["go", "Brouillon directement diffusable", "Ce contenu doit d’abord être retiré ou remplacé par un cas synthétique."],
     ],
   },
+  evolution: {
+    title: "Brouillon d’entretien de parcours professionnel", tag: "Cas Marie · trame 2026 à corriger", expected: ["health", "decision", "required"], decision: "AJUSTER",
+    purpose: "Préparer une trame d’échange sur le parcours professionnel, sans évaluer le salarié ni utiliser de donnée non nécessaire.",
+    source: "Profil fictif minimal et trame interne à mettre à jour — aucun extrait de dossier individuel réel.",
+    text: "Le brouillon indique qu’un salarié de 47 ans revient d’un arrêt long pour troubles anxieux. Il conclut qu’une évolution est peu probable et qu’aucune formation ne paraît nécessaire. Il ne traite ni des compétences mobilisées, ni de l’évolution du métier, ni des souhaits du salarié, du CPF ou du CEP.",
+    flags: [
+      ["health", "Donnée de santé à exclure", "La trame ne doit pas contenir le motif médical ou toute information de santé. Le repère de mi-carrière ne justifie pas cet accès."],
+      ["decision", "Décision ou appréciation indue", "Le brouillon ne peut ni conclure sur une évolution, ni décider qu’une formation n’est pas nécessaire."],
+      ["required", "Rubriques de parcours absentes", "Le résultat doit permettre l’échange sur compétences, évolution du métier, besoins de formation et souhaits d’évolution ; les informations manquantes doivent être signalées."],
+      ["cpf", "Information CPF et CEP absente", "Le CPF, les abondements possibles et le CEP sont des thèmes à traiter lorsque cela est pertinent pour la situation."],
+      ["ready", "Brouillon directement diffusable", "La trame doit être corrigée et relue avant toute utilisation avec un salarié."],
+    ],
+  },
 };
 
 const defaultForm = { scenario: "offer", flags: [], decision: "", corrections: "", reviewer: "", rationale: "" };
@@ -126,7 +139,7 @@ export function TestBench({ back }) {
 }
 
 const stepDescriptions = [
-  "Sélectionnez un cas fictif. Les trois situations illustrent des résultats possibles : ajustables, risqués ou à exclure.",
+  "Sélectionnez un cas fictif. Les quatre situations illustrent des résultats possibles : ajustables, risqués ou à exclure.",
   "Lisez le résultat comme un relecteur RH : identifiez les éléments précis qui exigent une correction ou un arrêt.",
   "Choisissez une décision explicite et consignez la correction ou le garde-fou qui permettrait de poursuivre le test.",
   "Votre fiche rend le test défendable : résultat observé, décision, responsable de relecture et prochaine action.",
