@@ -12,11 +12,14 @@
     "test": "npm run build"
   },
   "dependencies": {
+    "docx": "^9.7.1",
     "lucide-react": "^1.25.0",
+    "pdfjs-dist": "^6.4.299",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "@vitejs/plugin-react": "6.0.2",
     "tailwindcss": "4.2.1",
     "vite": "8.0.13"

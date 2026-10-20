@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlarmClock, ArrowLeft, ArrowRight, Check, CheckCircle2, CircleAlert,
-  FileCheck2, FileText, HeartHandshake, Lightbulb, Pause, Play,
+  FileCheck2, FileText, FileUp, HeartHandshake, Lightbulb, LoaderCircle, Pause, Play,
   RefreshCw, ShieldCheck, Target, UsersRound,
 } from "lucide-react";
 import { processName, processOpportunity, useJ1Project } from "./j1Project";
+import { applyJ1Restore, extractTextFromPdf, restoreJ1Export } from "./j1PdfRestore";
 
 const STEPS = [
   ["Choix", FileCheck2, "Relier le contexte, les deux processus et l’arbitrage."],
@@ -17,6 +18,41 @@ const STEPS = [
 function Field({ label, hint, value, onChange, placeholder, area = false }) {
   const Input = area ? "textarea" : "input";
   return <label className="c1-field"><span>{label}{hint && <small>{hint}</small>}</span><Input value={value || ""} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label>;
+}
+
+function RestoreExport({ onRestore }) {
+  const input = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [recovery, setRecovery] = useState(null);
+
+  const chooseFile = () => input.current?.click();
+  const readFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setLoading(true);
+    setError("");
+    setRecovery(null);
+    try {
+      const text = await extractTextFromPdf(file);
+      setRecovery(restoreJ1Export(text));
+    } catch (reason) {
+      setError(reason?.message || "La lecture de ce document n’a pas abouti.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return <section className="c1-restore">
+    <div className="c1-restore-icon"><FileUp size={21} /></div>
+    <div className="c1-restore-copy"><p>CHANGEMENT DE NAVIGATEUR ?</p><h2>Restaurer depuis un export PDF</h2><span>Importez un PDF exporté par le Feu tricolore ou le Studio C1. La lecture reste sur cet appareil : rien n’est envoyé en ligne.</span></div>
+    <div className="c1-restore-action"><input ref={input} type="file" accept="application/pdf,.pdf" onChange={readFile} hidden />
+      <button type="button" onClick={chooseFile} disabled={loading}>{loading ? <LoaderCircle className="c1-spin" size={16} /> : <FileUp size={16} />}{loading ? "Lecture en cours…" : "Choisir un export PDF"}</button>
+    </div>
+    {error && <p className="c1-restore-error"><CircleAlert size={16} />{error}</p>}
+    {recovery && <div className="c1-restore-preview"><div><CheckCircle2 size={18} /><span><b>{recovery.label} reconnu</b><small>{recovery.fields.length} élément{recovery.fields.length > 1 ? "s" : ""} prêt{recovery.fields.length > 1 ? "s" : ""} à restaurer. Les champs resteront modifiables.</small></span></div><aside><button type="button" className="c1-restore-cancel" onClick={() => setRecovery(null)}>Annuler</button><button type="button" className="c1-primary" onClick={() => { onRestore(recovery); setRecovery(null); }}>Appliquer au Studio C1</button></aside></div>}
+  </section>;
 }
 
 function ChoiceView({ project }) {
@@ -69,7 +105,13 @@ export function C1Studio({ back }) {
   const [project, setProject] = useJ1Project();
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [restored, setRestored] = useState("");
   const c1 = project.c1;
   const update = (field, value) => setProject((current) => ({ ...current, c1: { ...current.c1, [field]: value } }));
-  return <main className="c1-shell"><header className="c1-topbar"><button onClick={back}><ArrowLeft size={18} /> Retour à la journée 1</button><div><span><FileCheck2 size={17} /></span> Studio C1</div><p>Fiche finale et pitch de 2 minutes</p></header><section className="c1-hero"><div><p>JOUR 1 · CADRER ET PRÉSENTER</p><h1>Votre projet, <span>en une fiche défendable.</span></h1><p>Assemblez les éléments produits pendant la journée, précisez les preuves manquantes et préparez un pitch réaliste de deux minutes.</p><div className="c1-pills"><span><FileText size={14} /> Données reprises automatiquement</span><span><ShieldCheck size={14} /> Limites documentées</span><span><UsersRound size={14} /> Pair feedback intégré</span></div></div><div className="c1-hero-card"><span>FICHE C1</span><b>Un projet limité,<br />mesurable et humain.</b><small>À compléter, corriger et exporter.</small></div></section><section className="c1-layout"><aside className="c1-stepper"><p>PROGRESSION</p>{STEPS.map(([label, Icon], index) => <button key={label} className={index === step ? "active" : index < step ? "done" : ""} onClick={() => setStep(index)}><span>{index < step ? <Check size={14} /> : <Icon size={15} />}</span><b>{String(index + 1).padStart(2, "0")}</b>{label}</button>)}<div className="c1-mini"><FileText size={15} /><p>Les champs restent modifiables jusqu’à l’export final.</p></div></aside><section className="c1-workspace"><div className="c1-heading"><span>ÉTAPE {step + 1} / {STEPS.length}</span><div><h2>{STEPS[step][0]}</h2><p>{STEPS[step][2]}</p></div></div>{step === 0 && <ChoiceView project={project} />}{step === 1 && <SecurityView c1={c1} update={update} project={project} />}{step === 2 && <ProofView c1={c1} update={update} />}{step === 3 && <ScopeView c1={c1} update={update} />}{step === 4 && <PitchView c1={c1} update={update} project={project} />}<div className="c1-actions"><button disabled={step === 0} onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Précédent</button>{step < STEPS.length - 1 ? <button className="c1-primary" onClick={() => setStep((current) => current + 1)}>Continuer <ArrowRight size={16} /></button> : <button className="c1-primary" onClick={() => { setSaved(true); window.print(); }}><FileText size={16} /> Exporter la fiche C1</button>}</div>{saved && <p className="c1-saved"><CheckCircle2 size={16} /> Votre fiche C1 est prête à être enregistrée au format PDF.</p>}</section></section><PrintSummary project={project} /></main>;
+  const restore = (recovery) => {
+    setProject((current) => applyJ1Restore(current, recovery.patch));
+    setStep(recovery.kind === "feu-tricolore" ? 1 : 0);
+    setRestored(`${recovery.label} restauré : vérifiez les champs avant de poursuivre.`);
+  };
+  return <main className="c1-shell"><header className="c1-topbar"><button onClick={back}><ArrowLeft size={18} /> Retour à la journée 1</button><div><span><FileCheck2 size={17} /></span> Studio C1</div><p>Fiche finale et pitch de 2 minutes</p></header><section className="c1-hero"><div><p>JOUR 1 · CADRER ET PRÉSENTER</p><h1>Votre projet, <span>en une fiche défendable.</span></h1><p>Assemblez les éléments produits pendant la journée, précisez les preuves manquantes et préparez un pitch réaliste de deux minutes.</p><div className="c1-pills"><span><FileText size={14} /> Données reprises automatiquement</span><span><ShieldCheck size={14} /> Limites documentées</span><span><UsersRound size={14} /> Pair feedback intégré</span></div></div><div className="c1-hero-card"><span>FICHE C1</span><b>Un projet limité,<br />mesurable et humain.</b><small>À compléter, corriger et exporter.</small></div></section><div className="c1-restore-wrap"><RestoreExport onRestore={restore} />{restored && <p className="c1-saved"><CheckCircle2 size={16} /> {restored}</p>}</div><section className="c1-layout"><aside className="c1-stepper"><p>PROGRESSION</p>{STEPS.map(([label, Icon], index) => <button key={label} className={index === step ? "active" : index < step ? "done" : ""} onClick={() => setStep(index)}><span>{index < step ? <Check size={14} /> : <Icon size={15} />}</span><b>{String(index + 1).padStart(2, "0")}</b>{label}</button>)}<div className="c1-mini"><FileText size={15} /><p>Les champs restent modifiables jusqu’à l’export final.</p></div></aside><section className="c1-workspace"><div className="c1-heading"><span>ÉTAPE {step + 1} / {STEPS.length}</span><div><h2>{STEPS[step][0]}</h2><p>{STEPS[step][2]}</p></div></div>{step === 0 && <ChoiceView project={project} />}{step === 1 && <SecurityView c1={c1} update={update} project={project} />}{step === 2 && <ProofView c1={c1} update={update} />}{step === 3 && <ScopeView c1={c1} update={update} />}{step === 4 && <PitchView c1={c1} update={update} project={project} />}<div className="c1-actions"><button disabled={step === 0} onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Précédent</button>{step < STEPS.length - 1 ? <button className="c1-primary" onClick={() => setStep((current) => current + 1)}>Continuer <ArrowRight size={16} /></button> : <button className="c1-primary" onClick={() => { setSaved(true); window.print(); }}><FileText size={16} /> Exporter la fiche C1</button>}</div>{saved && <p className="c1-saved"><CheckCircle2 size={16} /> Votre fiche C1 est prête à être enregistrée au format PDF.</p>}</section></section><PrintSummary project={project} /></main>;
 }

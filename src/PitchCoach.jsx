@@ -12,6 +12,8 @@ const LEGACY_KEY = "ia-rh-pitch-coach";
 const FINAL_STUDIO_KEY = "ia-rh-final-certification-studio";
 const J2_STORAGE_KEY = "ia-rh-j2-certification-studio";
 const TIMER_SECONDS = 300;
+const MAX_PITCH_WORDS = 520;
+const MIN_PITCH_WORDS = 390;
 
 const STEPS = [
   ["Reprendre", RefreshCw],
@@ -159,7 +161,7 @@ function loadCoach() {
     script: saved.personal?.script || "",
     answers: { ...defaultPersonal.answers, ...(saved.personal?.answers || {}) },
   };
-  if (!personal.script) personal.script = buildPitch(source, personal);
+  if (!personal.script || countWords(personal.script) > MAX_PITCH_WORDS) personal.script = buildPitch(source, personal);
   return { source, personal };
 }
 
@@ -398,8 +400,8 @@ function Rehearse({
   personal, update, updateAnswer, words, seconds, elapsed, running,
   toggleTimer, resetTimer, showQuestions, setShowQuestions, copyScript, copied,
 }) {
-  const targetClass = words < 450 ? "short" : words > 700 ? "long" : "good";
-  const width = `${Math.min(100, (words / 650) * 100)}%`;
+  const targetClass = words < MIN_PITCH_WORDS ? "short" : words >= MAX_PITCH_WORDS ? "long" : "good";
+  const width = `${Math.min(100, (words / MAX_PITCH_WORDS) * 100)}%`;
   const milestones = [
     [0, 50, "Problème réel"],
     [50, 110, "Solution et conception"],
@@ -413,18 +415,18 @@ function Rehearse({
       <div>
         <span>VOLUME DE LA SOUTENANCE</span>
         <b>{words} <small>mots</small></b>
-        <p>{words < 450
+        <p>{words < MIN_PITCH_WORDS
           ? "La trame est encore courte pour cinq minutes : développez un exemple, un test ou votre méthode de mesure."
-          : words > 700
-            ? "La trame risque de dépasser cinq minutes : raccourcissez les détails déjà présents dans le dossier."
+          : words >= MAX_PITCH_WORDS
+            ? "La limite de 520 mots est atteinte : gardez l’essentiel et expliquez les détails seulement si le jury vous le demande."
             : "Le volume est cohérent avec une prise de parole d’environ cinq minutes."}</p>
       </div>
       <i><b style={{ width }} /></i>
     </div>
 
     <article className="pitch-script editable">
-      <div><span>TRAME MODIFIABLE</span><button type="button" onClick={copyScript}>{copied ? <CheckCircle2 size={15} /> : <Copy size={15} />}{copied ? "Copiée" : "Copier"}</button></div>
-      <textarea aria-label="Trame de soutenance modifiable" value={personal.script} onChange={(event) => update("script", event.target.value)} />
+      <div><span>TRAME MODIFIABLE · 520 MOTS MAXIMUM</span><button type="button" onClick={copyScript}>{copied ? <CheckCircle2 size={15} /> : <Copy size={15} />}{copied ? "Copiée" : "Copier"}</button></div>
+      <textarea aria-label="Trame de soutenance modifiable" value={personal.script} onChange={(event) => update("script", limitPitchWords(event.target.value, MAX_PITCH_WORDS))} />
     </article>
 
     <div className="pitch-training-grid">
@@ -468,42 +470,43 @@ function Rehearse({
 function buildPitch(source, personal) {
   const tests = Object.entries(source.tests || {})
     .filter(([, test]) => test?.observed)
-    .map(([key, test]) => `${testLabel(key)} : ${test.observed}${test.adjustment ? ` ; l’ajustement retenu est ${test.adjustment}` : ""}`)
-    .slice(0, 3)
+    .map(([key, test]) => `${testLabel(key)} : ${excerpt(test.observed, 20)}${test.adjustment ? ` ; ajustement : ${excerpt(test.adjustment, 14)}` : ""}`)
+    .slice(0, 2)
     .join(". ");
   const risks = (source.risks || [])
     .filter(([risk, prevention]) => risk || prevention)
-    .map(([risk, prevention]) => `${risk || "un risque identifié"}${prevention ? `, maîtrisé par ${prevention}` : ""}`)
+    .map(([risk, prevention]) => `${excerpt(risk || "un risque identifié", 15)}${prevention ? `, maîtrisé par ${excerpt(prevention, 12)}` : ""}`)
     .join(" ; ");
   const measurement = source.measurement || {};
   const adoption = source.adoption || {};
 
-  return `[0:00–0:50 · LE PROBLÈME]
-${personal.opening || `Bonjour. Je vais vous présenter le projet ${source.project || "[nom du projet]"}.`}
+  const pitch = `[0:00–0:45 · LE PROBLÈME]
+${excerpt(personal.opening || `Bonjour. Je présente le projet ${source.project || "[nom du projet]"}.`, 42)}
 
-Le projet part du contexte suivant : ${source.context || "[présenter brièvement le contexte professionnel]"}. Le problème observé est ${source.problem || "[décrire un fait observable]"}. Il concerne ${adoption.audiences || "[préciser les personnes concernées]"} et produit l’effet suivant : ${source.objective || "[préciser l’enjeu ou l’objectif recherché]"}. L’objectif n’est donc pas d’utiliser l’IA pour elle-même, mais d’améliorer un processus RH clairement délimité.
+Dans ${excerpt(source.context || "mon contexte professionnel", 22)}, le problème est simple : ${excerpt(source.problem || "[décrire le problème observé]", 42)}. Mon objectif est ${excerpt(source.objective || "[préciser un objectif mesurable]", 28)}. L’IA répond donc à un besoin RH précis, et non à une recherche d’outil.
 
-[0:50–1:50 · LA SOLUTION ET SA CONCEPTION]
-Nous avons d’abord étudié le processus ${source.project || "[processus retenu]"} et l’opportunité suivante : ${source.opportunity || "[opportunité d’assistance IA]"}. ${source.solutions.length ? `Deux solutions ont été examinées : ${source.solutions.join(" et ")}.` : "Deux solutions ont été comparées selon les critères utiles au projet."} Notre choix est conditionnel : ${source.conditionalChoice || "[expliquer la solution retenue et les conditions à confirmer]"}.
+[0:45–1:35 · LE CHOIX]
+J’ai retenu le processus ${excerpt(source.project || "[processus retenu]", 16)}. ${source.solutions.length ? `J’ai comparé ${source.solutions.slice(0, 2).join(" et ")}.` : "J’ai comparé deux solutions selon les critères utiles au projet."} Mon choix est conditionnel : ${excerpt(source.conditionalChoice || "[solution retenue et conditions à confirmer]", 48)}.
 
-Le prototype repose sur un prompt de production structuré${source.controlPrompt ? " et sur un prompt de contrôle distinct" : ""}. Il ne doit produire qu’un résultat intermédiaire vérifiable. ${personal.keyIdea || source.humanDecision || "La décision concernant les personnes, la validation et la diffusion restent humaines."}
+Le prototype repose sur un prompt de production structuré${source.controlPrompt ? " et un prompt de contrôle distinct" : ""}. ${excerpt(personal.keyIdea || source.humanDecision || "L’IA prépare un brouillon ; la validation et la diffusion restent humaines.", 34)}
 
-[1:50–2:50 · LES TESTS ET LA SÉCURISATION]
-Les tests ont été conduits avec ${source.allowedData || "[des données fictives, synthétiques ou strictement autorisées]"}. Sont explicitement exclus : ${source.forbiddenData || source.outOfScope || "[les données ou usages hors périmètre]"}. ${tests || "Les tests normal, limite, interdit, accessibilité et biais ont permis d’identifier les écarts et les ajustements nécessaires."}.
+[1:35–2:35 · LES TESTS ET GARDE-FOUS]
+Les tests utilisent ${excerpt(source.allowedData || "des données fictives, synthétiques ou strictement autorisées", 25)}. Sont exclus : ${excerpt(source.forbiddenData || source.outOfScope || "les données et usages hors périmètre", 25)}. ${tests || "Les tests normal, limite, interdit, accessibilité et biais permettent de vérifier les écarts avant tout pilote."}
 
-Les principaux risques sont ${risks || "[présenter les risques significatifs et leurs mesures de prévention]"}. ${source.accessibility ? `Une exigence d’accessibilité a également été retenue : ${source.accessibility}.` : ""} Le contrôle humain reste le suivant : ${source.humanDecision || "[nommer la validation non délégable]"}.
+Les risques principaux sont ${excerpt(risks || "[risques et mesures de prévention]", 55)}. ${source.accessibility ? `L’exigence d’accessibilité est : ${excerpt(source.accessibility, 22)}.` : "Le résultat doit rester clair, accessible et vérifiable."} ${excerpt(source.humanDecision || "Un référent humain valide tout résultat sensible ou incertain.", 25)}
 
-[2:50–3:50 · LE DÉPLOIEMENT ET LA MESURE]
-Le projet reste limité au périmètre suivant : ${source.perimeter || "[décrire le pilote limité]"}. Pour favoriser son appropriation, nous prévoyons ${adoption.diffusionActions || "[une information adaptée aux publics concernés]"}, puis ${adoption.trainingAndSupport || "[une prise en main et une possibilité de recours humain]"}. Les règles d’usage sont simples : ${adoption.charterAndSobriety || "[protection des données, contrôle humain et sobriété numérique]"}.
+[2:35–3:50 · LE PILOTE ET LA MESURE]
+Le pilote est limité à ${excerpt(source.perimeter || "[périmètre, public et durée]", 38)}. Les personnes concernées seront accompagnées par ${excerpt(adoption.diffusionActions || adoption.trainingAndSupport || "une information courte, une démonstration et un point de contact RH", 34)}.
 
-Nous suivrons trois dimensions. Pour l’efficacité, nous comparerons ${measurement.efficiencyBefore || "[la baseline]"} à ${measurement.efficiencyAfter || "[l’observation du pilote]"}. Pour la qualité, nous comparerons ${measurement.qualityBefore || "[la situation initiale]"} à ${measurement.qualityAfter || "[le résultat observé ou prévu]"}. Pour la relation humaine, nous comparerons ${measurement.humanBefore || "[le point de départ]"} à ${measurement.humanAfter || "[le retour des personnes concernées]"}. La collecte sera organisée ainsi : ${measurement.collectionPlan || "[source, méthode, fréquence et responsable]"}. ${measurement.userFeedback ? `Le retour utilisateur sera recueilli par ${measurement.userFeedback}.` : ""}
+Nous suivrons trois indicateurs : efficacité, qualité et relation humaine. La collecte prévue est ${excerpt(measurement.collectionPlan || "[source, fréquence et responsable de collecte]", 38)}. Elle sera complétée par ${excerpt(measurement.userFeedback || "un retour court des personnes concernées", 22)}. Cette mesure permet de vérifier que le temps gagné ne dégrade ni la qualité ni l’accompagnement humain.
 
-[3:50–5:00 · LES LIMITES ET LA DÉCISION]
-La limite que j’assume aujourd’hui est la suivante : ${personal.limit || source.j2Limit || "[indiquer ce que le projet ne permet pas encore de conclure]"}. Ce point évite de transformer un résultat de test ou une hypothèse en résultat réel.
+[3:50–5:00 · LA LIMITE ET LA DÉCISION]
+La limite que j’assume est ${excerpt(personal.limit || source.j2Limit || "[ce que le projet ne permet pas encore de conclure]", 38)}. Je ne transforme donc ni un test pédagogique ni une hypothèse en résultat réel.
 
-Ma décision actuelle est ${source.finalDecision.decision || source.j2Decision || "[GO, AJUSTER ou STOP]"} parce que ${source.finalDecision.rationale || "[relier la décision aux tests, aux risques et aux mesures]"}. La règle d’arrêt est ${source.finalDecision.stopRule || "[préciser ce qui impose de suspendre ou de revenir en arrière]"}. Une revue est prévue ${source.finalDecision.reviewDate ? `le ${source.finalDecision.reviewDate}` : "[à une date déterminée]"}.
+Ma décision est ${source.finalDecision.decision || source.j2Decision || "[GO, GO sous conditions, AJUSTER ou STOP]"}, car ${excerpt(source.finalDecision.rationale || "[justification liée aux tests, risques et mesures]", 48)}. Le pilote sera suspendu si ${excerpt(source.finalDecision.stopRule || "[règle d’arrêt]", 30)}. La revue est prévue ${source.finalDecision.reviewDate ? `le ${source.finalDecision.reviewDate}` : "à une date déterminée"}.
 
-La décision que je demande aujourd’hui est : ${personal.requestedDecision || source.finalDecision.nextAction || "[formuler la prochaine décision humaine]"}.`;
+La décision demandée aujourd’hui est : ${excerpt(personal.requestedDecision || source.finalDecision.nextAction || "[prochaine décision humaine]", 38)}.`;
+  return limitPitchWords(pitch, MAX_PITCH_WORDS);
 }
 
 function countSource(source) {
@@ -535,8 +538,28 @@ function countWords(text) {
   return text.replace(/\[[^\]]+\]/g, "").trim().split(/\s+/).filter(Boolean).length;
 }
 
+function excerpt(value, maxWords) {
+  const words = String(value || "").trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return words.join(" ");
+  return `${words.slice(0, maxWords).join(" ")}…`;
+}
+
+function limitPitchWords(value, maxWords) {
+  let remaining = maxWords;
+  return String(value || "").split(/(\[[^\]]+\])/g).map((part) => {
+    if (/^\[[^\]]+\]$/.test(part)) return part;
+    const tokens = part.match(/\S+|\s+/g) || [];
+    return tokens.map((token) => {
+      if (/^\s+$/.test(token)) return token;
+      if (remaining <= 0) return "";
+      remaining -= 1;
+      return token;
+    }).join("");
+  }).join("").trimEnd();
+}
+
 function estimatedTime(words) {
-  const totalSeconds = Math.max(0, Math.round((words / 125) * 60));
+  const totalSeconds = Math.max(0, Math.round((words / 105) * 60));
   return formatTime(totalSeconds);
 }
 

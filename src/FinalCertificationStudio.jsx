@@ -5,6 +5,7 @@ import {
   ShieldCheck, Sparkles, Target, UsersRound,
 } from "lucide-react";
 import { loadJ1Project, processName, processOpportunity } from "./j1Project";
+import { downloadFinalStudioDocx } from "./finalStudioDocx";
 import "./FinalCertificationStudio.css";
 
 const STORAGE_KEY = "ia-rh-final-certification-studio";
@@ -39,6 +40,11 @@ const defaultJ3 = {
   humanAfter: "",
   collectionPlan: "",
   userFeedback: "",
+  roiVolume: "",
+  roiMinutesBefore: "",
+  roiMinutesTarget: "",
+  roiHourlyCost: "",
+  roiCostNotes: "",
   decision: "",
   decisionRationale: "",
   nextAction: "",
@@ -165,6 +171,11 @@ export function FinalCertificationStudio({ back }) {
     window.setTimeout(() => window.print(), 80);
   };
 
+  const exportWord = () => downloadFinalStudioDocx({
+    snapshot: studio.snapshot,
+    form: studio.j3,
+  });
+
   return <main className="fs-shell">
     <header className="fs-topbar">
       <button className="fs-back" onClick={back}><ArrowLeft size={18} /> Retour à la journée 3</button>
@@ -215,13 +226,16 @@ export function FinalCertificationStudio({ back }) {
         {step === 0 && <ImportedWork snapshot={studio.snapshot} counts={counts} refresh={refreshSnapshot} />}
         {step === 1 && <Adoption form={studio.j3} update={update} />}
         {step === 2 && <Measurement form={studio.j3} update={update} />}
-        {step === 3 && <FinalDecision form={studio.j3} update={update} snapshot={studio.snapshot} exportDocument={exportDocument} />}
+        {step === 3 && <FinalDecision form={studio.j3} update={update} snapshot={studio.snapshot} exportDocument={exportDocument} exportWord={exportWord} />}
 
         <div className="fs-actions">
           <button className="fs-secondary" disabled={step === 0} onClick={() => setStep((current) => current - 1)}><ArrowLeft size={17} /> Précédent</button>
           {step < 3
             ? <button className="fs-primary" onClick={() => setStep((current) => current + 1)}>Continuer <ArrowRight size={17} /></button>
-            : <button className="fs-primary" onClick={exportDocument}><Download size={17} /> Exporter le dossier final</button>}
+            : <div className="fs-export-actions">
+              <button className="fs-secondary" onClick={exportWord}><FileCheck2 size={17} /> Télécharger en Word</button>
+              <button className="fs-primary" onClick={exportDocument}><Download size={17} /> Exporter en PDF</button>
+            </div>}
         </div>
         {exported && step === 3 && <p className="fs-exported"><CheckCircle2 size={17} /> Dans la fenêtre d’impression, choisissez « Enregistrer au format PDF ».</p>}
       </section>
@@ -234,7 +248,7 @@ export function FinalCertificationStudio({ back }) {
           <p>{studio.snapshot.c1.objective || "L’objectif défini au J1/J2 apparaîtra ici."}</p>
           <div className="fs-live-row"><b>J1 retrouvé</b><span>{counts.j1} repères</span></div>
           <div className="fs-live-row"><b>J2 retrouvé</b><span>{counts.j2} repères</span></div>
-          <div className={`fs-live-decision ${studio.j3.decision.toLowerCase()}`}>
+          <div className={`fs-live-decision ${decisionClass(studio.j3.decision)}`}>
             <span>Décision finale</span>
             <b>{studio.j3.decision || "À décider"}</b>
           </div>
@@ -333,18 +347,57 @@ function Measurement({ form, update }) {
       <Field label="Collecte en une phrase" hint="Source, méthode, fréquence et responsable." value={form.collectionPlan} onChange={(value) => update("collectionPlan", value)} placeholder="Ex. le responsable RH relève chaque vendredi le temps et les retouches sur les 10 cas du pilote." />
       <Field label="Retour des personnes concernées" value={form.userFeedback} onChange={(value) => update("userFeedback", value)} placeholder="Ex. trois questions courtes après deux semaines et un point oral avec les utilisateurs." />
     </div>
+    <RoiEstimate form={form} update={update} />
   </div>;
 }
 
-function FinalDecision({ form, update, snapshot, exportDocument }) {
+function numberValue(value) {
+  const normalized = String(value || "").trim().replace(",", ".");
+  return /^\d+(\.\d+)?$/.test(normalized) ? Number(normalized) : null;
+}
+
+function RoiEstimate({ form, update }) {
+  const volume = numberValue(form.roiVolume);
+  const before = numberValue(form.roiMinutesBefore);
+  const target = numberValue(form.roiMinutesTarget);
+  const hourlyCost = numberValue(form.roiHourlyCost);
+  const potentialHours = volume !== null && before !== null && target !== null && before > target
+    ? ((before - target) * volume) / 60
+    : null;
+  const grossValue = potentialHours !== null && hourlyCost !== null ? potentialHours * hourlyCost : null;
+
+  return <section className="fs-roi">
+    <header><Gauge size={20} /><div><b>Valeur et ROI prévisionnels</b><p>Une estimation simple pour éclairer la décision ; elle ne remplace pas les résultats du pilote.</p></div></header>
+    <div className="fs-roi-grid">
+      <Field area={false} label="Volume par période" hint="facultatif" value={form.roiVolume} onChange={(value) => update("roiVolume", value)} placeholder="Ex. 200 PDI" />
+      <Field area={false} label="Temps actuel estimé (min)" hint="facultatif" value={form.roiMinutesBefore} onChange={(value) => update("roiMinutesBefore", value)} placeholder="Ex. 45" />
+      <Field area={false} label="Temps-cible (min)" hint="facultatif" value={form.roiMinutesTarget} onChange={(value) => update("roiMinutesTarget", value)} placeholder="Ex. 15" />
+      <Field area={false} label="Coût horaire chargé" hint="facultatif" value={form.roiHourlyCost} onChange={(value) => update("roiHourlyCost", value)} placeholder="Ex. 42 €" />
+    </div>
+    <div className="fs-roi-result">
+      <div><span>Gain de capacité estimé</span><b>{potentialHours !== null ? `${Math.round(potentialHours)} h / période` : "À estimer"}</b></div>
+      <div><span>Valeur brute estimée</span><b>{grossValue !== null ? `${Math.round(grossValue).toLocaleString("fr-FR")} €` : "Facultative"}</b></div>
+      <p>Cette estimation est à confirmer pendant le pilote. Le ROI net intègre aussi les licences, la formation, le paramétrage et le temps de contrôle.</p>
+    </div>
+    <Field label="Coûts ou conditions à confirmer" hint="facultatif" value={form.roiCostNotes} onChange={(value) => update("roiCostNotes", value)} placeholder="Ex. licence à valider, formation HRBP et temps de relecture à intégrer avant tout ROI net." />
+  </section>;
+}
+
+function FinalDecision({ form, update, snapshot, exportDocument, exportWord }) {
+  const choices = [
+    { id: "go-conditionnel", label: "GO sous conditions" },
+    { id: "go", label: "GO" },
+    { id: "ajuster", label: "AJUSTER" },
+    { id: "stop", label: "STOP" },
+  ];
   return <div className="fs-stack">
     <div className="fs-decision-options">
-      {["GO", "AJUSTER", "STOP"].map((choice) => <button
+      {choices.map((choice) => <button
         type="button"
-        key={choice}
-        className={`${choice.toLowerCase()} ${form.decision === choice ? "selected" : ""}`}
-        onClick={() => update("decision", choice)}
-      ><span>{form.decision === choice && <Check size={15} />}</span><b>{choice}</b></button>)}
+        key={choice.id}
+        className={`${choice.id} ${form.decision === choice.label ? "selected" : ""}`}
+        onClick={() => update("decision", choice.label)}
+      ><span>{form.decision === choice.label && <Check size={15} />}</span><b>{choice.label}</b></button>)}
     </div>
     <div className="fs-grid two">
       <Field label="Pourquoi cette décision ?" value={form.decisionRationale} onChange={(value) => update("decisionRationale", value)} placeholder="Reliez votre décision aux tests, aux limites et aux mesures prévues." />
@@ -362,7 +415,10 @@ function FinalDecision({ form, update, snapshot, exportDocument }) {
         <span><CheckCircle2 size={16} /> C5 · Adoption</span>
       </div>
       {!snapshot.c1.retainedProcess && <p className="fs-warning"><Info size={16} /> Le processus retenu n’a pas été retrouvé. Vous pouvez néanmoins exporter, puis compléter le Studio C1.</p>}
-      <button type="button" onClick={exportDocument}><Download size={17} /> Exporter le dossier C1 à C5</button>
+      <div className="fs-preview-actions">
+        <button type="button" className="fs-word-export" onClick={exportWord}><FileCheck2 size={17} /> Télécharger en Word modifiable</button>
+        <button type="button" onClick={exportDocument}><Download size={17} /> Exporter le dossier C1 à C5 en PDF</button>
+      </div>
     </div>
   </div>;
 }
@@ -396,6 +452,11 @@ function getCounts({ snapshot, j3 }) {
 
 function Text({ label, value }) {
   return <p><b>{label} :</b> {value || "À compléter"}</p>;
+}
+
+function decisionClass(value) {
+  if (value === "GO sous conditions") return "go-conditionnel";
+  return String(value || "").toLowerCase();
 }
 
 function PrintDocument({ snapshot, form }) {
@@ -454,6 +515,9 @@ function PrintDocument({ snapshot, form }) {
       <MetricPrint label="Relation humaine" before={form.humanBefore} after={form.humanAfter} />
       <Text label="Organisation de la collecte" value={form.collectionPlan} />
       <Text label="Retour des personnes concernées" value={form.userFeedback} />
+      <Text label="Volume retenu pour l’estimation" value={form.roiVolume && `${form.roiVolume} unités par période`} />
+      <Text label="Estimation de valeur / ROI" value={roiPrintValue(form)} />
+      <Text label="Coûts ou conditions à confirmer" value={form.roiCostNotes} />
     </section>
 
     <section>
@@ -488,4 +552,15 @@ function SolutionPrint({ label, solution = {} }) {
 
 function MetricPrint({ label, before, after }) {
   return <p><b>{label} :</b> avant — {before || "À collecter"} · après — {after || "À observer"}</p>;
+}
+
+function roiPrintValue(form) {
+  const volume = numberValue(form.roiVolume);
+  const before = numberValue(form.roiMinutesBefore);
+  const target = numberValue(form.roiMinutesTarget);
+  const hourlyCost = numberValue(form.roiHourlyCost);
+  if (volume === null || before === null || target === null || before <= target) return "À estimer pendant le pilote : aucune valeur constatée n’est déclarée à ce stade.";
+  const hours = ((before - target) * volume) / 60;
+  const grossValue = hourlyCost !== null ? ` · valeur brute estimée : ${Math.round(hours * hourlyCost).toLocaleString("fr-FR")} €` : "";
+  return `Gain de capacité estimé : ${Math.round(hours)} h par période${grossValue}. Estimation à confirmer pendant le pilote ; ce n’est pas un ROI net constaté.`;
 }
