@@ -11,17 +11,16 @@ const J1_PROJECT_KEY = "ia-rh-j1-project";
 const PROMPT_CLINIC_KEY = "ia-rh-prompt-clinic";
 const TEST_BENCH_KEY = "ia-rh-test-bench";
 const TESTS = [
-  ["normal", "Normal"],
-  ["limit", "Limite"],
-  ["forbidden", "Interdit"],
-  ["accessibility", "Accessibilité"],
-  ["bias", "Biais & équité"],
+  ["normal", "Relecture RH & réglementaire", "Vérifier les rubriques attendues, la séparation avec l’évaluation et l’absence de données individuelles."],
+  ["manager", "Essai manager", "Vérifier que les questions aident à préparer l’échange sans devenir une notation du salarié."],
+  ["accessibility", "Accessibilité", "Vérifier la structure, la lisibilité et le résultat du vérificateur d’accessibilité Word."],
 ];
+const OPTIONAL_CHECKS = ["Données et confidentialité", "Neutralité du vocabulaire", "Accord collectif ou procédure interne à confirmer"];
 const STEPS = [
   ["Projet", FileText, "Reprendre les repères utiles du J1."],
   ["Solutions", ClipboardCheck, "Consolider la comparaison sourcée."],
   ["Prototype", Sparkles, "Archiver les prompts et l’accessibilité."],
-  ["Données & tests", TestTube2, "Rassembler les observations essentielles."],
+  ["Données & tests", TestTube2, "Tracer trois essais réels."],
   ["Décision", UserCheck, "Formaliser la décision humaine et datée."],
   ["Contrôle & export", FolderCheck, "Vérifier puis produire les preuves."],
 ];
@@ -179,7 +178,7 @@ export function J2CertificationStudio({ back }) {
           <h3>{form.process || "Projet à identifier"}</h3>
           <p>{form.objective || "Votre objectif réel apparaîtra ici."}</p>
           <div className="cs2-live-row"><b>Solutions</b><span>{[form.solutionA.name, form.solutionB.name].filter(Boolean).length} / 2</span></div>
-          <div className="cs2-live-row"><b>Tests documentés</b><span>{TESTS.filter(([key]) => form.tests[key].observed).length} / 5</span></div>
+          <div className="cs2-live-row"><b>Tests documentés</b><span>{TESTS.filter(([key]) => form.tests[key].observed).length} / {TESTS.length}</span></div>
           <div className={`cs2-live-decision ${form.decision.toLowerCase()}`}><span>Décision humaine</span><b>{form.decision || "À décider"}</b></div>
           <div className="cs2-human"><UserCheck size={16} /><span>Responsable<br /><b>{form.humanOwner || "À nommer"}</b></span></div>
         </div>
@@ -243,8 +242,9 @@ function Prototype({ form, update }) {
 
 function DataAndTests({ form, update, updateTest }) {
   return <div className="cs2-stack">
-    <div className="cs2-grid two data"><Field area label="Données autorisées" value={form.authorizedData} onChange={(v) => update("authorizedData", v)} placeholder="Données fictives, synthétiques ou strictement autorisées." /><Field area label="Données interdites" value={form.forbiddenData} onChange={(v) => update("forbiddenData", v)} placeholder="Données personnelles, sensibles ou confidentielles exclues." /><Field area label="Données à confirmer" value={form.dataToConfirm} onChange={(v) => update("dataToConfirm", v)} placeholder="Information, interlocuteur et action de vérification." /><Field area label="Données effectivement utilisées pour les tests" value={form.testData} onChange={(v) => update("testData", v)} placeholder="Décrivez uniquement la nature des données, sans coller leur contenu." /></div>
-    <div className="cs2-tests"><div><h3>Cinq catégories de test</h3><p>Une synthèse courte suffit : attendu, observé, ajustement.</p></div>{TESTS.map(([key, label]) => <article key={key}><span>{label}</span><Field area label="Attendu" value={form.tests[key].expected} onChange={(v) => updateTest(key, "expected", v)} placeholder="Ce que le test doit démontrer ou refuser." /><Field area label="Observé" value={form.tests[key].observed} onChange={(v) => updateTest(key, "observed", v)} placeholder="Fait réellement constaté." /><Field area label="Ajustement / trace" value={form.tests[key].adjustment} onChange={(v) => updateTest(key, "adjustment", v)} placeholder="Correction, responsable ou preuve conservée." /></article>)}</div>
+    <div className="cs2-grid two data"><Field area label="Données autorisées" value={form.authorizedData} onChange={(v) => update("authorizedData", v)} placeholder="Trame vierge, exigences réglementaires vérifiées, contenus publics ou validés." /><Field area label="Données interdites" value={form.forbiddenData} onChange={(v) => update("forbiddenData", v)} placeholder="Toute donnée de salarié, de santé, de rémunération ou d’évaluation individuelle." /><Field area label="Données à confirmer" value={form.dataToConfirm} onChange={(v) => update("dataToConfirm", v)} placeholder="Accord collectif, procédure interne et validation RH à confirmer." /><Field area label="Données effectivement utilisées pour les tests" value={form.testData} onChange={(v) => update("testData", v)} placeholder="Trame vierge V1/V2 et checklist réglementaire utilisée pour les essais." /></div>
+    <div className="cs2-tests"><div><h3>Trois essais utiles pour la trame</h3><p>Une synthèse courte suffit : attendu, observé, ajustement.</p></div>{TESTS.map(([key, label, hint]) => <article key={key}><span>{label}</span><Field area label="Attendu" hint={hint} value={form.tests[key].expected} onChange={(v) => updateTest(key, "expected", v)} placeholder="Ce que le test doit démontrer ou refuser." /><Field area label="Observé" value={form.tests[key].observed} onChange={(v) => updateTest(key, "observed", v)} placeholder="Fait réellement constaté." /><Field area label="Ajustement / trace" value={form.tests[key].adjustment} onChange={(v) => updateTest(key, "adjustment", v)} placeholder="Correction, responsable ou preuve conservée." /></article>)}</div>
+    <section className="cs2-optional"><div><h3>Points complémentaires, si utiles</h3><p>Ils sont couverts par la relecture RH : inutile de créer un test séparé si le projet ne le nécessite pas.</p></div><ul>{OPTIONAL_CHECKS.map((item) => <li key={item}>{item}</li>)}</ul></section>
   </div>;
 }
 
@@ -295,7 +295,7 @@ function inspectForm(form) {
   if (!form.decision) issues.push({ level: "critical", title: "Décision absente", message: "GO, AJUSTER ou STOP doit être choisi par le participant." });
   if (form.decision && !form.justification.trim()) issues.push({ level: "critical", title: "Décision sans justification", message: "La décision doit être reliée aux faits observés." });
   if (!form.humanOwner.trim()) issues.push({ level: "critical", title: "Responsable humain absent", message: "Nommez la fonction ou la personne responsable de la décision." });
-  if (TESTS.some(([key]) => !form.tests[key].observed.trim())) issues.push({ level: "warning", title: "Tests incomplets", message: "Une ou plusieurs catégories ne comportent pas encore de résultat observé." });
+  if (TESTS.some(([key]) => !form.tests[key].observed.trim())) issues.push({ level: "warning", title: "Essais à compléter", message: "Renseignez les trois essais utiles : relecture RH, essai manager et accessibilité." });
   return issues;
 }
 
@@ -326,7 +326,7 @@ function DataProof({ form }) {
 }
 
 function TestsProof({ form }) {
-  return <><h2>4. Protocole de test et décision</h2>{TESTS.map(([key, label]) => <section className="cs2-print-test" key={key}><h3>{label}</h3><Text label="Attendu" value={form.tests[key].expected} /><Text label="Observé" value={form.tests[key].observed} /><Text label="Ajustement / trace" value={form.tests[key].adjustment} /></section>)}<h3>Décision finale : {form.decision || "—"}</h3><Text label="Justification" value={form.justification} /><Text label="Limite" value={form.identifiedLimit} /><Text label="Responsable humain" value={form.humanOwner} /><Text label="Prochaine action" value={form.nextAction} /><Text label="Date de revue" value={form.reviewDate} /><Text label="Condition de reprise" value={form.restartCondition} /></>;
+  return <><h2>4. Trois essais et décision</h2>{TESTS.map(([key, label]) => <section className="cs2-print-test" key={key}><h3>{label}</h3><Text label="Attendu" value={form.tests[key].expected} /><Text label="Observé" value={form.tests[key].observed} /><Text label="Ajustement / trace" value={form.tests[key].adjustment} /></section>)}<h3>Décision finale : {form.decision || "—"}</h3><Text label="Justification" value={form.justification} /><Text label="Limite" value={form.identifiedLimit} /><Text label="Responsable humain" value={form.humanOwner} /><Text label="Prochaine action" value={form.nextAction} /><Text label="Date de revue" value={form.reviewDate} /><Text label="Condition de reprise" value={form.restartCondition} /></>;
 }
 
 function PrintDocument({ mode, form, issues }) {
