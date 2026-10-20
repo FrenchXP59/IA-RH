@@ -10,32 +10,32 @@ const STORAGE_KEY = "ia-rh-j2-bsi-certification-lab";
 
 const chapters = [
   {
-    title: "Cadrer le BSI", icon: Scale, color: "violet", kicker: "BLOC 1 · PREUVE C2 · ENVIRON 18 MIN",
+    title: "Cadrer l’entretien d’évolution", icon: Scale, color: "violet", kicker: "BLOC 1 · PREUVE C2 · ENVIRON 18 MIN",
     subtitle: "Définir ce que le prototype prépare, ce qu’il ne décide pas et qui conserve la responsabilité.",
-    takeaway: "Un BSI assisté par IA reste un brouillon individualisé, préparé depuis des sources maîtrisées et validé par une personne compétente.",
+    takeaway: "Une trame d’entretien assistée par IA reste un brouillon de préparation, alimenté par des sources maîtrisées et validé par un professionnel.",
     cards: [
-      ["À retenir", "Le BSI a une finalité précise.", "Le projet vise à préparer un brouillon de bilan social individuel cohérent et lisible, afin de faciliter la relecture RH / paie et l’échange avec le salarié."],
-      ["Garde-fou", "L’outil ne prend aucune décision.", "Il ne modifie ni rémunération, ni droits, ni parcours professionnel. La validation, la correction et l’envoi restent humains."],
+      ["À retenir", "La nouvelle trame a une finalité précise.", "Le projet vise à préparer une trame d’entretien d’évolution cohérente, lisible et adaptée au poste, afin de faciliter l’échange entre le salarié et son manager."],
+      ["Garde-fou", "L’outil ne prend aucune décision.", "Il ne décide ni d’une évolution, ni d’une formation, ni d’une évaluation. Le manager et les RH conservent la préparation, la conduite et le suivi de l’entretien."],
     ],
     questions: [
-      ["Quelle formulation décrit le mieux le périmètre du prototype BSI ?", ["Générer automatiquement le bilan et l’envoyer au salarié.", "Préparer un brouillon à partir de sources validées, puis le faire relire avant toute diffusion.", "Décider des avantages à attribuer selon le profil du salarié."], 1, "Le prototype assiste la préparation d’un document. Les choix concernant une personne et la diffusion restent sous responsabilité humaine."],
+      ["Quelle formulation décrit le mieux le périmètre du prototype ?", ["Générer automatiquement l’entretien et imposer les évolutions au salarié.", "Préparer une trame à partir de sources validées, puis la faire relire avant l’échange.", "Décider du parcours professionnel selon le profil du salarié."], 1, "Le prototype assiste la préparation d’un support. Les décisions concernant une personne restent sous responsabilité humaine."],
       ["Quelle information doit être explicitement conservée dans la preuve C2 ?", ["La couleur choisie pour le document.", "La finalité, le périmètre et la personne qui garde la décision humaine.", "Le nombre de fois où le prompt a été copié."], 1, "Le dossier doit montrer un besoin réel, un périmètre délimité et une responsabilité humaine identifiable."],
     ],
-    exchange: "Complétez oralement : « Nous utilisons l’IA pour préparer…, à partir de…, tout en conservant… ». Quelle phrase défendriez-vous pour votre BSI ?",
+    exchange: "Complétez oralement : « Nous utilisons l’IA pour préparer…, à partir de…, tout en conservant… ». Quelle phrase défendriez-vous pour votre nouvelle trame ?",
   },
   {
     title: "Choisir les données", icon: Database, color: "blue", kicker: "BLOC 2 · PREUVE C2 / C4 · ENVIRON 22 MIN",
     subtitle: "Distinguer ce qui est nécessaire, ce qui doit être confirmé et ce qui reste hors périmètre.",
     takeaway: "Un environnement interne autorisé n’autorise pas toutes les données : la finalité et la nécessité restent déterminantes.",
     cards: [
-      ["À retenir", "Disponible ne veut pas dire nécessaire.", "Pour un BSI, une donnée doit être utile à la rubrique produite, provenir d’une source validée et être traitée dans le cadre interne autorisé."],
-      ["Exemple BSI", "Une donnée de santé reste hors périmètre.", "Même si une organisation conserve légalement certaines informations, elles n’ont pas à alimenter un brouillon BSI. En cas de doute, l’information est exclue ou soumise à validation compétente."],
+      ["À retenir", "Disponible ne veut pas dire nécessaire.", "Pour une trame d’entretien, une donnée doit être utile à la question préparée, provenir d’une source validée et être traitée dans le cadre interne autorisé."],
+      ["Exemple", "Une donnée de santé reste hors périmètre.", "Même si une organisation conserve légalement certaines informations, elles n’ont pas à alimenter une trame d’entretien d’évolution. En cas de doute, l’information est exclue ou soumise à validation compétente."],
     ],
     questions: [
-      ["Le BSI est préparé dans un outil interne autorisé. Peut-on y verser toutes les informations RH disponibles ?", ["Oui, car l’outil est interne.", "Non : seules les informations nécessaires, autorisées et adaptées à la finalité doivent être utilisées.", "Oui, à condition de retirer uniquement le nom du salarié."], 1, "L’environnement compte, mais il ne supprime ni le principe de minimisation ni le besoin d’un cadre d’usage."],
-      ["Quelle réaction est la plus prudente si une source paie ne permet pas de confirmer un avantage ?", ["Inventer une valeur approximative pour terminer le BSI.", "Retirer la rubrique sans le signaler.", "Signaler l’information manquante, identifier la source ou la personne à consulter, puis faire valider."], 2, "Une information manquante devient un point à vérifier. Le prototype ne doit jamais compléter un fait professionnel par hypothèse."],
+      ["La trame est préparée dans un outil interne autorisé. Peut-on y verser toutes les informations RH disponibles ?", ["Oui, car l’outil est interne.", "Non : seules les informations nécessaires, autorisées et adaptées à la finalité doivent être utilisées.", "Oui, à condition de retirer uniquement le nom du salarié."], 1, "L’environnement compte, mais il ne supprime ni le principe de minimisation ni le besoin d’un cadre d’usage."],
+      ["Quelle réaction est la plus prudente si une source ne permet pas de confirmer un besoin d’évolution ou de formation ?", ["Inventer une hypothèse pour compléter la trame.", "Retirer le sujet sans le signaler.", "Signaler l’information manquante, identifier la source ou la personne à consulter, puis faire valider."], 2, "Une information manquante devient un point à vérifier. Le prototype ne doit jamais compléter un fait professionnel par hypothèse."],
     ],
-    exchange: "Pour votre BSI, citez une donnée autorisée, une donnée à confirmer et une donnée clairement exclue. Pourquoi ?",
+    exchange: "Pour votre trame, citez une donnée autorisée, une donnée à confirmer et une donnée clairement exclue. Pourquoi ?",
   },
   {
     title: "Produire un brouillon vérifiable", icon: WandSparkles, color: "coral", kicker: "BLOC 3 · PREUVE C3 · ENVIRON 22 MIN",
@@ -46,10 +46,10 @@ const chapters = [
       ["Prompt de contrôle", "Il organise la relecture.", "Il demande de repérer les faits non sourcés, les incohérences, les rubriques absentes, les données non nécessaires et les formulations ambiguës."],
     ],
     questions: [
-      ["Quelle consigne protège le mieux la production d’un brouillon BSI ?", ["Complète toutes les rubriques, même si des informations manquent.", "À partir des sources validées, rédige un brouillon ; signale séparément toute information manquante ou incertaine.", "Choisis les avantages les plus pertinents pour chaque salarié."], 1, "Cette consigne rend le résultat contrôlable : elle sépare les faits disponibles des éléments à confirmer."],
-      ["Quel est le rôle principal du prompt de contrôle ?", ["Générer une seconde version plus longue.", "Décider automatiquement si le BSI peut être envoyé.", "Rechercher les écarts, manques et points de vigilance selon des critères explicites."], 2, "Le contrôle aide la relecture ; il ne remplace ni la validation RH, ni la décision de diffusion."],
+      ["Quelle consigne protège le mieux la préparation d’une trame d’entretien ?", ["Complète toutes les rubriques, même si des informations manquent.", "À partir des sources validées, prépare une trame ; signale séparément toute information manquante ou incertaine.", "Déduis les souhaits professionnels les plus probables du salarié."], 1, "Cette consigne rend le résultat contrôlable : elle sépare les faits disponibles des éléments à confirmer."],
+      ["Quel est le rôle principal du prompt de contrôle ?", ["Générer une seconde version plus longue.", "Décider automatiquement si la trame est adaptée au salarié.", "Rechercher les écarts, manques et points de vigilance selon des critères explicites."], 2, "Le contrôle aide la relecture ; il ne remplace ni la validation RH, ni la décision de diffusion."],
     ],
-    exchange: "Quelle information devrait obligatoirement être signalée comme « à vérifier » dans votre BSI plutôt qu’inventée ?",
+    exchange: "Quelle information devrait obligatoirement être signalée comme « à vérifier » dans votre trame plutôt qu’inventée ?",
   },
   {
     title: "Tester le prototype", icon: ClipboardCheck, color: "amber", kicker: "BLOC 4 · PREUVE C4 · ENVIRON 30 MIN",
@@ -61,7 +61,7 @@ const chapters = [
     ],
     questions: [
       ["Comment tester un cas interdit concernant une donnée de santé ?", ["Coller une donnée de santé réelle dans l’outil pour vérifier sa réaction.", "Décrire le scénario ou utiliser une donnée fictive, puis vérifier la règle d’exclusion et la réaction attendue.", "Ne pas parler des données interdites pour garder le test simple."], 1, "Un test ne justifie jamais l’utilisation d’une donnée réelle interdite. Le scénario fictif permet d’évaluer la règle et la décision attendue."],
-      ["Quelle trace rend le test défendable ?", ["« Cela semble fonctionner. »", "« Test normal : brouillon attendu ; une rubrique source manque ; action : demander validation paie avant diffusion ; trace : version corrigée datée. »", "« L’IA a validé le BSI. »"], 1, "La trace doit rendre visible le lien entre le cas, l’observation, l’action humaine et la preuve conservée."],
+      ["Quelle trace rend le test défendable ?", ["« Cela semble fonctionner. »", "« Test normal : trame attendue ; une information manque ; action : demander validation RH avant utilisation ; trace : version corrigée datée. »", "« L’IA a validé l’entretien. »"], 1, "La trace doit rendre visible le lien entre le cas, l’observation, l’action humaine et la preuve conservée."],
     ],
     exchange: "Quel premier test normal allez-vous exécuter dans le Banc d’essai ? Quel cas limite préparerez-vous ensuite ?",
   },
@@ -74,10 +74,10 @@ const chapters = [
       ["Finaliser la preuve", "Le Studio J2 rassemble, il n’invente rien.", "Vous y retrouverez les sources, les prompts, le périmètre de données, le protocole de test et la décision finale. Chaque élément doit venir de votre travail validé."],
     ],
     questions: [
-      ["Le brouillon BSI est clair, mais deux avantages doivent être confirmés par la paie avant envoi. Quelle décision est la plus défendable ?", ["GO immédiat : la majorité du document est correcte.", "AJUSTER : faire confirmer les rubriques, corriger, puis re-tester avant diffusion.", "STOP définitif : un écart impose toujours l’abandon du projet."], 1, "AJUSTER rend l’écart visible, protège la diffusion et prévoit une action proportionnée. Le GO pourra être décidé après correction et relecture."],
+      ["La trame est claire, mais deux rubriques doivent être validées avec les RH avant utilisation. Quelle décision est la plus défendable ?", ["GO immédiat : la majorité du document est correcte.", "AJUSTER : faire confirmer les rubriques, corriger, puis re-tester avant utilisation.", "STOP définitif : un écart impose toujours l’abandon du projet."], 1, "AJUSTER rend l’écart visible, protège l’échange et prévoit une action proportionnée. Le GO pourra être décidé après correction et relecture."],
       ["Qu’est-ce qui manque à la formule « GO sous conditions » ?", ["Une couleur de statut.", "Les conditions, le responsable, la prochaine action et la date de revue.", "Un texte plus long généré par l’IA."], 1, "Une décision est défendable lorsqu’elle est motivée, attribuée et datée. L’outil peut documenter ; il ne décide pas."],
     ],
-    exchange: "À ce stade, quelle décision provisoire défendriez-vous pour le BSI : GO sous conditions, AJUSTER ou STOP ? Quelle condition est non négociable ?",
+    exchange: "À ce stade, quelle décision provisoire défendriez-vous pour la trame : GO sous conditions, AJUSTER ou STOP ? Quelle condition est non négociable ?",
   },
 ];
 
@@ -89,8 +89,8 @@ function loadProgress() {
 function loadPromptProject() {
   try {
     const form = JSON.parse(localStorage.getItem("ia-rh-prompt-clinic") || "{}").form || {};
-    return { contentType: form.contentType || "Brouillon de bilan social individuel", objective: form.objective || "À préciser dans Prompt Clinic", source: form.source || "À préciser dans Prompt Clinic" };
-  } catch { return { contentType: "Brouillon de bilan social individuel", objective: "À préciser dans Prompt Clinic", source: "À préciser dans Prompt Clinic" }; }
+    return { contentType: form.contentType || "Trame d’entretien d’évolution", objective: form.objective || "À préciser dans Prompt Clinic", source: form.source || "À préciser dans Prompt Clinic" };
+  } catch { return { contentType: "Trame d’entretien d’évolution", objective: "À préciser dans Prompt Clinic", source: "À préciser dans Prompt Clinic" }; }
 }
 
 function SectionHeading({ number, title, text }) {
@@ -118,8 +118,8 @@ export function J2CertificationLab({ back, openTestBench }) {
   const reset = () => { if (window.confirm("Recommencer l’atelier ? Les réponses et notes de cet atelier seront effacées sur ce navigateur.")) { setProgress({ answers: {}, notes: {} }); setRevealed({}); setChapterIndex(0); } };
 
   return <main className="j2lab-shell">
-    <header className="j2lab-topbar"><button onClick={back}><ArrowLeft size={18} /> Retour à la journée 2</button><div><span><BookOpen size={16} /></span> Atelier guidé BSI</div><button onClick={reset}><RefreshCw size={14} /> Recommencer</button></header>
-    <section className="j2lab-hero"><div><p>JOUR 2 · APPRENDRE POUR PRODUIRE SES PREUVES</p><h1>Du BSI au prototype<br /><span>testable et défendable.</span></h1><div><ShieldCheck size={17} /> 5 blocs · notions, exemples BSI, quiz expliqués et échanges</div></div><aside><span>{completed} / 5</span><b>blocs explorés</b><i><em style={{ width: `${(answered / total) * 100}%` }} /></i></aside></section>
+    <header className="j2lab-topbar"><button onClick={back}><ArrowLeft size={18} /> Retour à la journée 2</button><div><span><BookOpen size={16} /></span> Atelier guidé · entretien d’évolution</div><button onClick={reset}><RefreshCw size={14} /> Recommencer</button></header>
+    <section className="j2lab-hero"><div><p>JOUR 2 · APPRENDRE POUR PRODUIRE SES PREUVES</p><h1>De la nouvelle trame<br /><span>au prototype défendable.</span></h1><div><ShieldCheck size={17} /> 5 blocs · notions, exemples, quiz expliqués et échanges</div></div><aside><span>{completed} / 5</span><b>blocs explorés</b><i><em style={{ width: `${(answered / total) * 100}%` }} /></i></aside></section>
     <section className="j2lab-project"><span><Sparkles size={17} /></span><div><b>Projet repris de Prompt Clinic</b><p><strong>{project.contentType}</strong> · {project.objective}</p><small>Sources déclarées : {project.source}</small></div></section>
     <section className="j2lab-layout"><aside className="j2lab-nav"><p>PREUVES À CONSTRUIRE</p>{chapters.map((item, index) => { const ChapterIcon = item.icon; const done = item.questions.every((_, questionIndex) => progress.answers[`${index}-${questionIndex}`] !== undefined); return <button type="button" key={item.title} onClick={() => setChapterIndex(index)} className={`${index === chapterIndex ? "active" : ""} ${done ? "done" : ""}`}><span>{done ? <CheckCircle2 size={16} /> : <ChapterIcon size={16} />}</span><b>{String(index + 1).padStart(2, "0")}</b><em>{item.title}</em></button>; })}<div><CircleHelp size={16} /> Répondez puis lisez le débrief : l’objectif est de préparer votre raisonnement de certification.</div></aside>
       <section className="j2lab-workspace"><header className="j2lab-heading"><span className={chapter.color}><Icon size={23} /></span><div><p>{chapter.kicker}</p><h2>{chapter.title}</h2><small>{chapter.subtitle}</small></div></header>
