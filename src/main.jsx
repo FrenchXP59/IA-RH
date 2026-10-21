@@ -28,7 +28,7 @@ const days = [
     title: "Comprendre, cadrer et sécuriser les usages IA en RH",
     subtitle: "Passer de l’envie d’utiliser l’IA à une première feuille de route réaliste, éthique et utile.",
     objectives: ["Identifier les opportunités prioritaires dans son périmètre RH", "Distinguer données utilisables, sensibles et interdites", "Formuler un cadre d’expérimentation responsable"],
-    resources: [["Support J1 — Matin", "PDF", "/ia-rh-j1-matin.pdf"], ["Support J1 — Après-midi", "PDF", "/ia-rh-j1-apres-midi.pdf"], ["Guide de décision — Données & confidentialité", "PDF"], ["Canevas de cartographie des opportunités", "DOCX"]],
+    resources: [["Support J1 — Matin", "PDF", "/ia-rh-j1-matin.pdf"], ["Support J1 — Après-midi", "PDF", "/ia-rh-j1-apres-midi.pdf"]],
     notebookBonus: {
       title: "Cas pratiques à télécharger pour NotebookLM",
       description: "Une sélection de 6 dossiers documentaires destinés à être importés dans NotebookLM afin de découvrir le fonctionnement d’une base documentaire IA. Ces documents couvrent le RGPD, l’AI Act, des cas pratiques et de la jurisprudence européenne.",
@@ -63,7 +63,7 @@ const days = [
     title: "Concevoir des contenus RH utiles avec l’IA",
     subtitle: "Transformer une intention RH en contenu clair, inclusif et immédiatement réutilisable.",
     objectives: ["Structurer des prompts professionnels et vérifiables", "Produire et améliorer des contenus RH variés", "Installer un contrôle qualité avant diffusion"],
-    resources: [["Support J2 — Prompts & contenus RH", "PPT"], ["Fiche source fictive Novalys — Technicien maintenance", "PDF", "/j2-fiche-source-fictive-novalys-technicien-maintenance.pdf"], ["Jeu de 10 CV fictifs — tests de recrutement", "ZIP · 10 PDF", "/jeu-10-cv-fictifs-j2.zip"], ["Bibliothèque de prompts RH", "PDF"], ["Grille de relecture inclusive", "PDF"]],
+    resources: [["Fiche source fictive Novalys — Technicien maintenance", "PDF", "/j2-fiche-source-fictive-novalys-technicien-maintenance.pdf"], ["Jeu de 10 CV fictifs — tests de recrutement", "ZIP · 10 PDF", "/jeu-10-cv-fictifs-j2.zip"]],
     notebookBonus: {
       title: "Skill, création vidéo et STT",
       description: "Des documents fictifs pour tester la création d’un skill, puis des ressources bonus autour de la conception de vidéos illustrées et des usages de transcription.",
@@ -74,9 +74,6 @@ const days = [
         ["Présentation — Contrôleur d’échéances RH · création d’un skill", "PDF", "/bonus-j2-controleur-echeances-rh.pdf"],
         ["Exemple de skill — concevoir un storyboard de vidéo illustrée", "PDF", "/bonus-j2-exemple-skill-storyboard-video-illustree.pdf"],
         ["Guide de prompt — audit LinkedIn avec Comet", "PDF", "/bonus-j2-guide-prompt-audit-linkedin-comet.pdf"],
-        ["Skill IA & RH", "À produire prochainement"],
-        ["Création vidéo", "À produire prochainement"],
-        ["STT — Speech to text", "À produire prochainement"],
       ],
     },
     apps: [
@@ -99,7 +96,7 @@ const days = [
     title: "Tester, mesurer et déployer son projet IA & RH",
     subtitle: "Construire un pilote crédible, embarquer les parties prenantes et mesurer ce qui compte vraiment.",
     objectives: ["Définir un pilote à petite échelle et réversible", "Choisir des indicateurs utiles au métier et aux personnes", "Présenter une feuille de route de déploiement"],
-    resources: [["Support J3 — Pilote et déploiement", "PPT"], ["Article — IA et automatisation du recrutement", "PDF", "/article-ia-automatisation-recrutement.pdf"], ["Création de landing page — guide de prompt", "PDF", "/creation-landing-page-prompt.pdf"], ["Canevas de pilote IA & RH", "DOCX"], ["Tableau de bord de suivi", "XLSX"]],
+    resources: [["Article — IA et automatisation du recrutement", "PDF", "/article-ia-automatisation-recrutement.pdf"], ["Création de landing page — guide de prompt", "PDF", "/creation-landing-page-prompt.pdf"]],
     apps: [
       ["Atelier guidé — Piloter l’IA RH", "Début de journée · Apprendre", "Explorez les cinq repères d’un pilote responsable : notions, exemples, questions expliquées et échanges en classe virtuelle.", "Un parcours interactif d’environ une heure avant de finaliser votre projet.", BookOpen],
       ["Glossaire IA & RH", "Repères transversaux", "Retrouvez les mots essentiels des trois journées, ainsi que le vocabulaire utile pour créer une landing page avec Antigravity.", "Définitions courtes, exemples RH et termes front-end à garder sous la main.", BrainCircuit],
